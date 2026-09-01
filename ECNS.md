@@ -67,7 +67,7 @@ b. MyPSK (pre-shared key)
 - 1 LAN 1 key
 - to secure and prevent interruption of WIFI within a VLAN
 - in the ssid configuration (security type) can `tick the mypsk box`
-- max 500 users can be created
+- max 500 users with unique psk per SSID
 
 c. AirGuard
 - wireless security system 24/7
