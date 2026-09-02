@@ -1,7 +1,7 @@
 ## EnGenius Certified Network Specialist
 
 ### EnGenius Cloud
-- a dashboard that can use to manage different network devices (switches, APs, End Devices) from company and departments
+- a cloud dashboard that can use to manage different network devices (switches, APs, End Devices) from company and departments
 
 1. register the APs and Switches
 - find <img width="92" height="87" alt="Screenshot 2026-09-01 160353" src="https://github.com/user-attachments/assets/f71ab4a2-e039-41a2-bd62-13856303cde0" />
