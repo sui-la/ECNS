@@ -2,6 +2,9 @@
 
 ### EnGenius Cloud
 - a cloud dashboard that can use to manage different network devices (switches, APs, End Devices) from company and departments
+- utilize Function as a Service (FaaS) - a big application logic to multiple small functional code - run when trigger by specific event - uninterrupted cloud service
+- server -> cloud provider (manage all the hardware devices, os, automated scaling behind the scene)
+- utilize HTTPS to manage cloud device (between cloud devices and internet)
 
 1. register the APs and Switches
 - find <img width="92" height="87" alt="Screenshot 2026-09-01 160353" src="https://github.com/user-attachments/assets/f71ab4a2-e039-41a2-bd62-13856303cde0" />
