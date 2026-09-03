@@ -208,6 +208,78 @@ EnGenius Cloud To-Go Application (mobile)
 
 ##### Vlan
 - segmentation of network, allows to create multiple segment in a physical network interface
-- native vlan = vlan 1
+- 1 access port = 1 cable = 1 vlan
+- 1 trunk can 1 cable - multiple VLANs
+###### - internal rules: treat a untagged frame as a native vlan <-> PVID of a trunk port
+- default native vlan = vlan 1
 - VLANs span from VLAN ID 1-4096
 - standard of tagging & untagging of ethernet frames for vlan management: IEEE 802.1Q
+- Header: dest & source mac, ethernet type, payload, frame check sequence (FCS) - only tagged vlan have this header!
+<img width="816" height="93" alt="image" src="https://github.com/user-attachments/assets/c422d305-e1f6-46ae-8115-e438fe3966b4" />
+Untagged - sends between end devices
+<img width="711" height="136" alt="image" src="https://github.com/user-attachments/assets/cfa5da81-1a73-4ce5-b67d-ba7239849680" />
+
+Tagged (have a 32 bit = 8 bytes of header) - sends between switches, routers, APs
+<img width="844" height="114" alt="image" src="https://github.com/user-attachments/assets/8cb08837-a406-4de0-8eb9-6163596c024a" />
+
+##### Process Flow
+###### - Upstream
+   - Client traffic enters the network
+     - Wired: Through a connected port on a switch
+     - Wireless: Through a particular SSID on an AP
+   - Traffic is “tagged” to be on a particular VLAN
+     - Wired: VLAN tag is inserted as traffic enters switch port
+     - Wireless: VLAN tag inserted before data transmitted to wired network - access point does this
+   - Tagged traffic flows through the network
+   - Destination
+     - Another client: VLAN tag is “stripped” before being transmitted to the destination client
+     - Gateway: Router performs NAT between VLAN and WAN
+    
+###### - Downstream
+   - traffic by client enters to network
+     - internal
+       - tagged by switch/AP
+       - flow through network
+       - untagged before reaching client (wired - ethernet cable, wireless - radio wave)
+     - external
+       - NAT translate the external ip to internal ip
+   - Egress: Untagged Vlan
+     - strip the vlan tag before exiting the port
+   - Ingress: PVID (vlan of the port)
+     - PVID is assigned manually or automatically by the according physical switch ports
+   - To connect a wired client:
+     - PVID and untagged VLAN must match
+     - Equivalent to the active VLAN setting on an AP’s SSID
+
+##### Wired Port Status
+1. Access Port
+- 1 access = 1 cable = 1 VLAN
+- insert / strip vlan tags during ingress / egress
+- tagged not allowed
+- untagged frame flows along transmission
+- link to client
+2. Trunk Port
+- 1 cable = multiple VLAN
+- tagged allowed except Native VLAN
+- tag stayed along the transmission of frame
+3. General
+- access to trunk (vice versa)
+- Useful for fine tuning (set manually - VLAN access permission to specific port) VLAN behavior (e.g. only allowing some VLANs through port)
+4. Port VLAN ID (PVID)
+- define how the switch handle the untagged traffic
+
+##### VLAN Management
+<img width="1443" height="397" alt="image" src="https://github.com/user-attachments/assets/f73d21cb-446a-4991-bec7-7f694d73cfe8" />
+
+## Link Aggregation
+- combines multiple physical ports to a logical ports
+- increase bandwidth and redundancy
+- Other terms for link aggregation:
+  - Trunking
+  - Teaming
+  - Bonding
+  - Channeling
+  - Bundling
+  - LAG (link aggregation group)
+ - eg for bandwidth: 1 link (port to port) have 1 Gbps, 2 link (2 port -> 2 port = 1 logical port) will have 2 Gbps
+ - eg for redundancy: 2 link (2 port -> 2 port = 1 logical port) will have 2 access surface, 1 down, another still can run
