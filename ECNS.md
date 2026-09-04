@@ -77,4 +77,3 @@ c. AirGuard
 - protect enterprise network from threats
 - WIDS, WIPS
 - set rules
-- 
