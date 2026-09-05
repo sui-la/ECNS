@@ -63,7 +63,7 @@ Common Protocol
 - a type of latency cause when transmitting (real-time applications like voice calling and video streaming)
 - less consistance
 - inbound more, outbound less
-
+- 
 ## Network Component
 ##### 1. Modem
 - external internet connection provided by ISP to a building
