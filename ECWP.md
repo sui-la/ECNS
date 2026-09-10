@@ -106,4 +106,8 @@ f=c/λ
   * **ETSI:** Establishes Harmonized European Standards required for European regulations.
   * **Band Allocation:** Opening new frequency ranges (such as the $6\text{ GHz}$ band for Wi-Fi 6E) requires official approval and rule changes from these regulatory agencies.
  
-  
+## WLAN Planning and Design
+##### Wifi Inteference
+- 
+<img width="1200" height="492" alt="image" src="https://github.com/user-attachments/assets/33086b5b-b515-4edd-b158-2e8268734c68" />
+
