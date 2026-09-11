@@ -380,11 +380,194 @@ EnGenius Cloud provides centralized online management for device inventory and P
 <img width="554" height="821" alt="image" src="https://github.com/user-attachments/assets/3ef503b7-f95b-44a2-b4e4-9891a3350e6f" />
 
 5. Reports
+<img width="1200" height="777" alt="image" src="https://github.com/user-attachments/assets/de8440b1-1013-474c-a309-9e102f72181d" />
 
 6. Notifications & Alerts
+> can be customize via: for ap, switch, pdu, gateway, switch extender
+  - Alerts via the Cloud Portal
+  - Email Alerts
+  - EnGenius Cloud To-Go Push Notifications
+<img width="799" height="463" alt="image" src="https://github.com/user-attachments/assets/c3ca7d2a-4be4-43fb-9842-ee916ef34204" />
 
 7. SNMP Monitoring
+- used when monitoring multiple networking device brands
+<img width="809" height="120" alt="image" src="https://github.com/user-attachments/assets/217ae405-6029-4b62-8b72-4a50df50344b" />
 
+Below are the supported MIBs for SNMP:
+# Network Device MIB Support Matrix
+
+| Category | Device Type | Supported MIBs |
+| :--- | :--- | :--- |
+| **Wireless** | Access Points | `RFC1213-MIB` |
+| **Networking** | Switches | `BRIDGE-MIB`<br>`DNS-RESOLVER-MIB`<br>`ENTITY-MIB`<br>`EtherLike-MIB`<br>`IEEE8021-PAE-MIB`<br>`IF-FORWARD-MIB`<br>`IF-MIB`<br>`IP-MIB`<br>`LLDP-MIB`<br>`MAU-MIB`<br>`P-BRIDGE-MIB`<br>`Q-BRIDGE-MIB`<br>`RFC1213-MIB`<br>`RMON2-MIB`<br>`SNMP-FRAMEWORK-MIB`<br>`SNMP-NOTIFICATION-MIB`<br>`SNMP-TARGET-MIB`<br>`SNMP-USER-BASED-SM-MIB`<br>`SNMP-VIEW-BASED-ACM-MIB`<br>`SNMPv2-MIB`<br>`TCP-MIB` |
 8. API Integration
+<img width="208" height="402" alt="image" src="https://github.com/user-attachments/assets/93f63976-f9d7-4a44-a618-a70a7c6429e2" />
+<img width="800" height="517" alt="image" src="https://github.com/user-attachments/assets/14a55864-8294-44f9-9c19-e10650c1ab5a" />
 
+- **Prerequisites**: Generating and managing API Keys requires an account with **PRO License-enabled** Organization administrator privileges.
+- **Key Scope**: Generated API Keys are unique and grant access across all Organizations managed by that **specific administrator**.
+- **Primary Use Cases**: API integration is **required to connect with third-party services**, including Location-Based Services (LBS), Bluetooth Low Energy (BLE), and external voucher service management.
 9. Syslog & Traffic Logs
+a. Syslog
+<img width="923" height="183" alt="image" src="https://github.com/user-attachments/assets/9818d7e1-3d03-49b4-a087-a482d2784208" />
+
+- Device logs can be forwarded to an external server simply by enabling the feature and entering the server's IP address and port.
+- Access Points (APs) and Switches can be assigned separate external syslog servers.
+b. Traffic Logs
+<img width="1200" height="486" alt="image" src="https://github.com/user-attachments/assets/e51d331a-b45b-4b5f-8950-58e190677bc2" />
+
+- Disabled by default, this feature forces APs to capture and route detailed client metadata (Source/Destination MAC, Source/Destination IP, and Port) to an external syslog server, often to meet regional legal compliance standards.
+
+> External Syslog must be configured before enabling Traffic Logs
+> Enabling Traffic Logs will severely degrade AP performance
+
+10. Presence Reporting & URL Reporting
+a. Presence Reporting
+- Allows cloud-managed Access Points (APs) to continuously capture 802.11 probe request frames from nearby wireless devices and stream real-time location data to third-party servers.
+- This is commonly used for CRM tools, presence analytics, and Location-Based Services (LBS).
+<img width="1200" height="494" alt="image" src="https://github.com/user-attachments/assets/c7042634-d356-4f9a-bce5-b57345af13ac" />
+
+b. URL Reporting
+- Tracks and logs web addresses accessed by network devices.
+- It is utilized to enforce internet usage policies, identify malicious domains, and analyze user browsing behavior for security and productivity audits.
+<img width="1200" height="498" alt="image" src="https://github.com/user-attachments/assets/b4af56d4-6853-4deb-abb5-9f2d0086648c" />
+
+## Security
+##### EnGenius AirGuard
+**Core Functionality**: Utilizes Wireless Intrusion Detection System (WIDS) to monitor RF spectrum and alert on rogue APs, and Wireless Intrusion Prevention System (WIPS) to automatically classify threats and neutralize rogue connections.
+
+**Threat Mitigation**: Protects against common wireless attacks, including Man-in-the-Middle (MITM), Evil Twin AP impersonation/spoofing, Valid SSID misuse, RF Jamming, and De-authentication attacks.
+
+**Hardware & Licensing Requirements**: Supported on EnGenius Security APs (e.g., ECW220S, ECW230S) and requires an active PRO License to operate on the EnGenius Cloud Portal.
+
+##### Attacks
+Reason for Attacks:
+* **Steal Information**
+  * Login credentials
+  * Credit card information
+  * Database
+* **Terminate Function of Wireless IP Devices**
+  * Wireless IP camera
+  * Personal hotspot
+  * Drone de-authentication
+* **Pranks**
+
+* **Man-in-the-Middle Attack (MITM)**: Occurs on Open or WPA-Personal networks when an attacker secretly relays and potentially alters communications between an AP and a wireless client without their knowledge.
+* **Evil Twin / AP Impersonation**: A rogue AP simulates the exact SSID and MAC address of an official AP to deceive clients into connecting so the attacker can steal data.
+* **AP Spoofing**: An unauthorized AP masquerades as a legitimate AP by spoofing its wireless MAC address to launch malicious attacks.
+* **Valid SSID Misuse**: An unauthorized AP broadcasts the same SSID as the legitimate network, tricking client devices into connecting and causing security breaches.
+* **RF Jamming**: A malicious device continuously transmits packets or signals on a specific SSID or channel to flood the RF spectrum, forcing connected clients to disconnect.
+* **De-authentication Attacks**: An attacker sends forged 802.11 de-authentication frames to impersonate an AP or client, forcefully disconnecting legitimate devices from the network.
+
+##### Network Security
+**Access Control List (ACL) & Filtering**
+* **Blacklist:** Supports storing up to 1,000 MAC addresses per Organization to ban specific devices.
+* **Blocked Client Splash Page:** Displays a custom splash screen informing blocked users that they are banned when attempting to connect.
+<img width="881" height="506" alt="image" src="https://github.com/user-attachments/assets/725f8027-0559-4898-9309-c94ca69af051" />
+
+**Bypass & Isolation Management**
+* **VIP List:** Serves a dual purpose depending on the device interface:
+  * **Wireless Devices:** Bypasses Captive Portal splash pages for devices that cannot authenticate (e.g., smart devices, wireless printers).
+  * **Wired Devices:** Bypasses Layer 2 (L2) Isolation, allowing wireless clients to access specified wired resources (e.g., network printers).
+<img width="586" height="269" alt="image" src="https://github.com/user-attachments/assets/575ce803-713b-4dd1-a896-f5d191f229f2" />
+
+* **L2 Isolation:** Prevents direct communication between wireless-to-wireless and wireless-to-wired clients to isolate network traffic.
+
+**Randomized MAC Address Handling**
+* **Impact of Random MACs:** Modern mobile operating systems (iOS 14+, Android 10+) hide physical MAC addresses by default. While good for public privacy, it disrupts device tracking, BYOD access control, and MAC authentication in corporate environments.
+* **Block Random MAC Connection:** EnGenius Cloud can identify and block devices using randomized MACs. It redirects them to a specialized splash page with instructions on disabling MAC randomization before allowing access.
+<img width="883" height="618" alt="image" src="https://github.com/user-attachments/assets/30fbf7a9-dccb-4b12-ac51-6bc5b3df9f91" />
+
+##### Two Factor Authentication
+<img width="253" height="481" alt="image" src="https://github.com/user-attachments/assets/683d5d9a-4c2e-4fa7-b0b5-01a0e8b441e5" />
+<img width="498" height="436" alt="image" src="https://github.com/user-attachments/assets/3cf4839f-87bc-4e99-8c90-3eed3ea5e54d" />
+
+```
+When 2FA is enabled, **DO NOT delete the Google Authenticator app** on your device. Doing so, without the backup keys, will prevent you from accessing your EnGenius Cloud account.
+```
+
+## Diagnostic Tools
+#### Diagnostic SSID Overview
+EnGenius Cloud Access Points (APs) broadcast specific diagnostic SSIDs to indicate network connectivity issues:
+
+* **EnMGMTxxxx-No_Eth**
+  * **Cause:** AP lacks an Ethernet connection.
+  * **Solution:** Verify the Ethernet cable is securely plugged in.
+
+* **EnMGMTxxxx-No_IP**
+  * **Cause:** AP cannot obtain an IP address from the DHCP server.
+  * **Solution:** Check the AP's IP address configuration.
+
+* **EnMGMTxxxx-IP_Conflict**
+  * **Cause:** AP's IP address conflicts with another device on the network.
+  * **Solution:** Reconfigure the AP's IP address configuration to resolve the conflict.
+
+* **EnMGMTxxxx-Gateway_ERR**
+  * **Cause:** AP cannot connect to its default gateway.
+  * **Solution:** Check IP configuration and verify reachability to the default gateway.
+
+* **EnMGMTxxxx-Proxy_ERR**
+  * **Cause:** AP cannot reach the internet via the HTTP/HTTPS proxy.
+  * **Solution:** Verify proxy settings under miscellaneous configuration.
+
+* **EnMGMTxxxx-DNS_ERR**
+  * **Cause:** AP cannot resolve domain names through the DNS server.
+  * **Solution:** Check the AP's IP address and DNS configuration.
+
+* **EnMGMTxxxx-Cloud_ERR**
+  * **Cause:** Local network connectivity is functional, but the AP cannot connect to EnGenius Cloud.
+  * **Solution:** Verify EnGenius Cloud server status via EnGenius support.
+ 
+#### Real-Time Diagnostic Tools
+EnGenius Cloud access points include built-in diagnostic tools accessible via the AP list or AP Details page, enabling remote troubleshooting without additional external hardware or software.
+<img width="331" height="52" alt="image" src="https://github.com/user-attachments/assets/f0ffcd28-0fde-40fd-8e3d-66cf7bd19f05" />
+
+**Core Capabilities**
+* **Activity Monitoring:** Real-time tracking of CPU, Memory, Throughput, and Current-Channel Utilization.
+* **Internet Connectivity:** Includes Speed Test, Ping, and Traceroute utilities.
+* **All Channel Utilization:** Monitors Wi-Fi channel spectrum usage to identify interference sources and optimize performance.
+<img width="1200" height="675" alt="image" src="https://github.com/user-attachments/assets/1fc9c627-228b-474d-8f02-568ce4e043da" />
+<img width="1200" height="678" alt="image" src="https://github.com/user-attachments/assets/3ca9a85b-ee7c-4610-aa6c-dcd1951fa8fe" />
+
+* **Licensing Limits:** Available on both Basic and PRO Licenses (Basic License limits real-time session duration to 1 minute per activation).
+<img width="1027" height="255" alt="image" src="https://github.com/user-attachments/assets/ef6fae63-cada-4144-8e51-047e8c96b904" />
+
+**Advanced Features (PRO & Security APs)**
+* **Live Clients (PRO License):** View connected client devices in real time for immediate connection status checks.
+* **RF Analyzer (Security APs):** Built-in full spectrum analyzer for real-time channel utilization and RF interference analysis without extra equipment.
+
+## Glossary
+Key wireless and networking terminology defined in the EnGenius Certified Wireless Professional course:
+#### Core Hardware & Architecture
+* **Access Point (AP):** Hardware device providing wireless connection for client devices.
+* **Client:** Wired or wireless device with the capability to connect to a network.
+* **Dual-Band:** An access point equipped with both 2.4 GHz and 5 GHz radios.
+* **Managed Mode:** A device operating under a central controller or management system.
+* **Wireless Mesh:** Interconnection of access points forming a distributed network over Wi-Fi.
+
+#### Network Security & Access
+* **Access Control List (ACL):** MAC address list used for blacklisting or whitelisting.
+* **Encryption:** Process of encoding wireless data to secure network communications.
+* **L2 Isolation:** Prevents wireless clients from communicating with other client devices (wired or wireless) on the network.
+* **MAC Address:** Unique hardware identifier assigned to every network interface.
+* **SSID (Service Set Identifier):** Public name of a Wi-Fi network.
+
+#### RF & Signal Metrics
+* **dBi (decibel isotropic):** Unit of measurement for antenna power gain.
+* **dBm (decibel-milliwatt):** Unit of measurement defining AP transmit power.
+* **LOS (Line-of-Sight):** Unobstructed straight-line path between two devices.
+* **RSSI (Received Signal Strength Indication):** Measurement of radio power received by a client device.
+* **TX Power (Transmit Power):** Output power level of an access point radio, directly affecting coverage area.
+
+#### Wireless Performance & Tuning
+* **Auto Channel:** Intelligent channel selection based on neighboring APs to minimize interference.
+* **Auto Power:** Dynamic power adjustment based on neighboring APs to prevent co-channel interference.
+* **Band Steering:** Prioritizes client connections on the 5 GHz band over the 2.4 GHz band.
+* **Channel:** Specific radio frequency allocated for wireless transmission.
+* **Channel Width (HT/VHT):** Frequency span that directly influences connection speed.
+* **Fast Roaming:** Allows seamless transition of client devices between APs without disrupting active sessions.
+* **RSSI Threshold:** Minimum signal level tolerance setting that prompts clients to switch to an AP or radio with stronger coverage.
+
+#### Traffic Types
+* **Broadcast:** Data transmitted to all devices across the entire network segment.
+* **Multicast:** Data transmitted to a specific group of multiple destinations.
