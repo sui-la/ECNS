@@ -211,7 +211,183 @@ You cannot plug an end-user device directly into a port configured only for a no
 * **Relay co-existence restriction**: Requires all other VLANs to either disable DHCP or run DHCP Relay if at least one VLAN on the gateway has DHCP Relay enabled.
 <img width="768" height="358" alt="image" src="https://github.com/user-attachments/assets/eb5f6167-facb-427f-b6f6-01130ddc0889" />
 
+#### Configure ESG LAN DHCP Client Addressing Mode
+* **Configuration navigation**: Select the target VLAN under *Configure > Gateway > Interface > LAN* and locate the *DHCP* settings section.
+* **Server Mode setup**: Choose *DHCP Server* to configure the local IP pool, lease time, gateway IP, and primary/secondary DNS options directly on the gateway.
+* **Relay Mode setup**: Select *Relay DHCP* and specify the target IP address of your central external DHCP server so the gateway can forward client requests across subnets.
+* **Relay IP verification**: Ensure the destination Relay IP address is reachable from the gateway interface to prevent cross-subnet DHCP request drops.
+<img width="593" height="314" alt="image" src="https://github.com/user-attachments/assets/e26c3f05-7568-4c56-9762-8aaba80b0493" />
 
+```
+**The Big Risk: "Rogue DHCP Servers"**
+If you accidentally run two independent DHCP servers on the same VLAN that aren't synced or configured for failover, they will race to assign IP addresses. This causes IP address conflicts, wrong default gateways, and broken internet access for your devices.
+```
+
+#### Configure ESG LAN Captive Portal
+* **Captive portal definition**: Intercepts user HTTP/HTTPS requests on public-access or guest networks, forcing interaction with a web landing page before granting internet access.
+* **DNS configuration prerequisite**: Requires client DNS to be set to the ESG LAN IP to ensure web URL redirection functions correctly.
+* **Click-through mode**: Redirects clients to an ESG landing page where clicking "Continue to Internet" grants access, redirecting to the original URL or a designated landing page.
+<img width="768" height="443" alt="image" src="https://github.com/user-attachments/assets/886e81a1-8d04-4338-a13d-2adf72ffbbc3" />
+
+* **Custom RADIUS authentication mode**: Uses an external RADIUS server (supports up to 2 for redundancy) to authenticate users via a credential prompt before granting access.
+<img width="768" height="553" alt="image" src="https://github.com/user-attachments/assets/18b020fd-e47f-4184-86c6-34f7cf9a841a" />
+
+* **Session and idle timeouts**: Re-enforces portal authentication when session limits (default 60 min) or inactivity thresholds (default 30 min) are reached.
+
+## Configure Static Route
+* **Layer 3 switch interworking**: Integrates ESG in routed mode with downstream external L3 switches to handle complex internal subnet routing requirements.
+* **Static route declaration**: Directs traffic for internal subnets (e.g., `10.10.1.0/24` and `10.10.2.0/24`) by setting the ESG static route next-hop IP to the L3 switch interface (`192.168.1.2`).
+* **Default route return path**: Requires configuring a default route (`0.0.0.0/0`) on the external L3 switch pointing to the ESG LAN IP (`192.168.1.1`) for outbound internet access.
+* **Configuration navigation**: Create static routing rules by navigating to *Configure > Gateway > Interface > Static Route* and selecting *+Add Rule*.
+<img width="768" height="285" alt="image" src="https://github.com/user-attachments/assets/fdaaa167-cf61-4d74-ac5a-d340130a9c54" />
+
+## Policy Routes
+#### Layer 3 and Layer 7 Policy-Based Routing
+> Layer 3 Policy-Based Routing (PBR):
+- Definition: Utilizes IP addresses and network masks to make routing decisions.
+- Use Cases: Enables routing of traffic based on source and destination IP, protocol type.
+- Advantages: Enhances network performance and control by directing traffic to preferred paths.
+
+> Layer 7 Policy-Based Routing:
+- Definition: Makes routing decisions based on application-level information, such as HTTP headers.
+- Use Cases: Prioritizes specific application traffic like streaming or VoIP, providing quality of service.
+- Advantages: Offers granular control and improved service levels based on content types.
+
+* **Layer 3 PBR**: Makes routing decisions using IP addresses, network masks, and protocol types to direct traffic over preferred paths for optimized performance.
+* **Layer 7 PBR**: Uses application-level parameters (e.g., HTTP headers) to prioritize traffic like VoIP or streaming, enforcing granular Quality of Service (QoS).
+* **Key PBR benefits**: Optimizes bandwidth usage, enhances security by isolating sensitive traffic, enables dynamic path selection, and cuts costs by steering non-critical traffic to cheaper links.
+* **Network efficiency & QoS**: Optimizes overall bandwidth utilization by directing critical traffic across preferred links while preventing network congestion.
+* **Enhanced path security**: Enforces security policies by explicitly routing sensitive internal data traffic across dedicated secure paths or security appliances.
+* **Cost management**: Reduces operational costs by steering non-critical background traffic over lower-cost WAN links while saving primary links for priority traffic.
+* **PBR vs. Static Routing**: Static routing makes decisions based strictly on destination IP address using fixed tables, whereas PBR evaluates multi-criteria policies (source IP, application type, QoS requirements) for flexible traffic control.
+<img width="676" height="366" alt="image" src="https://github.com/user-attachments/assets/00cc706f-d404-4514-a9be-ff1c9ad54f1a" />
+
+| | Routing method | Routing decisions | Flexibility | Control & use cases | Limitations |
+| ----- | ----- | ----- | ----- | ----- | ----- |
+| 1 | Policy-based routing (PBR) | Based on defined policies using source/destination IP, application types, and protocols | High flexibility; dynamically adapts to changing network conditions and reroutes traffic | Provides granular control to prioritize mission-critical applications (VoIP, streaming) and enforce security | — |
+| 2 | Static routing | Based on fixed routing tables configured manually by network administrators | Low flexibility; routes are predefined and remain constant unless manually adjusted | Simple and predictable routing for small, stable networks | Lacks dynamic failover; requires manual intervention if a link goes down |
+
+#### Configure Policy Routes in Cloud Gateway
+* **Configuration path**: Access Layer 7 policy routes via *Configure > Gateway > Interface > Policy Route > Layer 7 > Add Rule*.
+* **SaaS traffic prioritization**: Optimize network efficiency by prioritizing essential cloud applications (e.g., Gmail, Windows 365, Salesforce) over general web browsing.
+* **Dual WAN traffic steering**: Route standard enterprise traffic over WAN1 (primary link) while establishing WAN2 as an active failover or backup interface to ensure business continuity during WAN1 congestion or link failure.
+* **Granular L7 rule application**: Direct traffic based on broad application categories or target specific applications within a category to route through designated WAN interfaces.
+<img width="768" height="348" alt="image" src="https://github.com/user-attachments/assets/0466dde0-01f2-4f40-a4b1-7789e03b0bd1" />
+<img width="768" height="372" alt="image" src="https://github.com/user-attachments/assets/55885651-3e72-44b1-a294-c91d7576c35d" />
+
+## Site-to-Site VPN
+#### Site-to-Site VPN Basic Concept and Applications
+* **Private connection over Internet**: Encrypts traffic between two or more distinct networks (e.g., corporate HQ and branch offices) to securely share resources as a single unified network over standard Internet connections.
+* **Cost-effective Multiprotocol Label Switching(MPLS) alternative**: Leverages public Internet infrastructure for private traffic routing instead of relying on expensive dedicated private MPLS circuits.
+* **Packet encapsulation & encryption**: Encapsulates and encrypts internal private IP packets inside an outer public IP header at the firewall/VPN gateway before transmitting securely across the Internet.
+* **Multi-office resource sharing**: Enables continuous cross-geographic communication and resource sharing for organizations operating multiple remote office locations.
+
+#### Configure Site-to-Site VPN for ESGs in Different Organizations or 3rd Party
+* **Non-EnGenius gateway configuration**: Navigate to *Configure > Gateway > Site to Site VPN > Add Non-EnGenius Gateway* to establish IPsec tunnels between ESGs in different organizations or with third-party VPN devices.
+<img width="768" height="359" alt="image" src="https://github.com/user-attachments/assets/0061bb11-e432-4497-b04d-30997afac7a6" />
+
+* **Public WAN IP specification**: Enter the peer device's native public WAN IP, or its mapped public NAT IP if the peer sits behind an external NAT router or firewall.
+* **Remote ID consistency**: Match the Remote ID strictly to the peer's public WAN IP address; never use the peer's private WAN IP as the Remote ID when behind NAT.
+* **Bidirectional setup requirement**: Perform identical peer configuration steps on both local and remote VPN devices to complete IPsec tunnel setup.
+* **Tunnel status verification**: Check *Manage > VPN Status > Non-EnGenius Peers* for a green vertical bar indicating an active tunnel, or inspect *Analyze > Event Log > Device Event* for connection logs.
+<img width="768" height="346" alt="image" src="https://github.com/user-attachments/assets/5c4ab5a4-812a-4f8f-a401-5ccacf0d78b6" />
+
+#### Auto VPN: Configure Site-to-Site VPN with Few Clicks
+* **Auto VPN simplification**: Provides rapid, automated Site-to-Site VPN provisioning for ESGs within the same organization without requiring manual IPsec Phase 1 and Phase 2 configurations.
+* **Subnet VPN enablement**: Requires checking the *Use VPN* option for any local subnets that need to be accessible across the VPN tunnels.
+* **ESG participation configuration**: Toggle *Site to Site VPN* on each ESG and define the topology type (*Mesh VPN* as a Hub or *Hub-and-Spoke* as a Spoke), local subnets, and NAT Traversal settings.
+<img width="748" height="727" alt="image" src="https://github.com/user-attachments/assets/5dc3194f-9d3f-44e6-a545-d130fb3020f6" />
+
+* **NAT Traversal modes**: Supports *Automatic* NAT traversal (requires PRO License) or *Manual: Port Forwarding*.
+* **Supported VPN topologies**: Supports **Mesh VPN** (all participating ESGs configured as Hub nodes), **Hub-and-Spoke** (1 central Hub node with multiple Spoke nodes), or a **Mixed Topology** combining both structures across an organization.
+<img width="768" height="316" alt="image" src="https://github.com/user-attachments/assets/bcadbd74-bfe5-4bf8-aac4-994eaa3cc5df" />
+
+* **Full subnet connectivity**: Automatically establishes IPsec tunnels connecting all selected, directly connected local LAN subnets across participating gateway nodes once deployed.
+<img width="768" height="382" alt="image" src="https://github.com/user-attachments/assets/f5db2aa1-43c7-4b2b-b8c7-a3500a99ed7a" />
+
+#### EnGenius Auto VPN NAT Traversal: Auto WAN IP Refresh
+* **Dynamic WAN IP flexibility**: Supports ESG deployments using fixed or dynamic public WAN IPs directly, or positioned behind external NAT devices.
+* **Cloud-managed IP tracking**: EnGenius Cloud dynamically tracks each ESG’s public WAN IP and port mapping table, automatically pushing updates to VPN peers if a dynamic IP changes to maintain continuous tunnel connectivity.
+* **Auto VPN setup path**: Enable Site-to-Site VPN via *Configure > Gateway > Site to Site VPN*, select the network topology (Mesh Hub or Hub-and-Spoke Spoke), assign local subnets with *Use VPN*, and set *NAT Traversal* to *Automatic*.
+<img width="768" height="365" alt="image" src="https://github.com/user-attachments/assets/befb03ff-3078-40b2-ba05-07e259cba63e" />
+<img width="768" height="365" alt="image" src="https://github.com/user-attachments/assets/265a0dd7-9066-484e-a35a-dda61bd2039c" />
+
+* **Tunnel verification**: Verify active VPN tunnels in *Manage > VPN Status > EnGenius Peers* (indicated by a green vertical status bar) or inspect events in *Analyze > Event Log > Device Event*.
+<img width="768" height="355" alt="image" src="https://github.com/user-attachments/assets/3e1420b7-3dd6-49fe-bdab-9085cb937ea2" />
+<img width="768" height="321" alt="image" src="https://github.com/user-attachments/assets/6e7411c8-8ce5-4de2-92c9-e8d49821b1d2" />
+<img width="768" height="428" alt="image" src="https://github.com/user-attachments/assets/2d9fb00a-e3c3-4f47-8768-da11de70360c" />
+
+* **License requirement**: Automatic NAT Traversal strictly requires an EnGenius **PRO License** and is not supported on the Basic License.
+
+#### Permissive and Symmetric NAT
+* **Permissive vs. Symmetric NAT**: Permissive NAT reuses the same public IP address and port mapping for different destinations, whereas Symmetric NAT assigns unique IP:Port mappings per destination, preventing mapping reuse.
+<img width="768" height="381" alt="image" src="https://github.com/user-attachments/assets/8b3d5c14-9fc2-494a-894e-3242cac35beb" />
+
+* **Automatic NAT Traversal limitation**: ESG Auto VPN with Automatic NAT Traversal fails when operating behind an external Symmetric NAT device.
+* **Manual Port Forwarding fallback**: Devices behind Symmetric NAT must set NAT Traversal to *Manual: Port Forwarding*, set the Public IP & Port to `External NAT Public IP: 500`, and forward inbound **UDP 500** and **UDP 4500** on the external router to the ESG WAN IP.
+* **Control and data plane firewall requirements**: ESG utilizes source UDP 500/4500 and destination UDP 500/4500 for IPsec control plane and data plane sessions; external NAT devices must explicitly permit outbound traffic on these UDP ports.
+<img width="768" height="338" alt="image" src="https://github.com/user-attachments/assets/06cbe9d3-9724-4f5a-87d6-378498a023ca" />
+
+#### Site-to-Site VPN Outbound Rules
+* **Default VPN traffic routing**: Establishes full cross-subnet communication across all selected local LAN subnets (with *Use VPN* enabled) by default once a Site-to-Site VPN tunnel connects participating ESGs.
+* **Access control enforcement**: Restricts unauthorized or undesired cross-site traffic by configuring granular firewall policies via *Configure > Gateway > Site to Site VPN > Setting > VPN Outbound Rules*.
+* **Protocol-level blocking example**: Enables target IP- and service-specific restrictions (e.g., blocking Telnet access to an L2 switch at `192.168.66.200` on *Site#2* from any host inside *Site#1*'s `192.168.67.0/24` subnet).
+
+## Client VPN
+#### Firewall Basics: IPsec Remote Access
+* **Remote user connectivity**: Establishes secure, encrypted IPsec tunnels for roaming users to access internal corporate network resources remotely over standard Internet connections.
+* **Client IP pool requirement**: Requires configuring a dedicated IP address pool on the firewall to dynamically assign private IP addresses to authenticated remote client PCs.
+* **Unified user experience**: Grants remote devices direct private network access via client VPN software, matching the on-premise office network experience once authentication passes.
+<img width="768" height="321" alt="image" src="https://github.com/user-attachments/assets/bff129ef-4247-4ae0-8819-a2fa807f64eb" />
+
+#### Configure ESG Client VPN
+* **Configuration path**: Access Client VPN settings via *Configure > Gateway > Client VPN* with support for **IPsec** or **EnGenius SecuPoint**.
+<img width="768" height="376" alt="image" src="https://github.com/user-attachments/assets/59b90833-f8e1-4f1d-a30a-350040678375" />
+<img width="768" height="382" alt="image" src="https://github.com/user-attachments/assets/657114bf-5149-4aee-b9dd-ebe93a05838d" />
+
+* **Hostname & NAT forwarding**: Automatically displays the Primary WAN Public IP or FQDN; if the WAN is behind an external NAT router, configure 1:1 NAT or forward **UDP 500/4500** (IPsec) or **TCP 443 / UDP 1194** (SecuPoint) to the ESG WAN IP.
+* **VPN Client Subnet allocation**: Requires a non-overlapping subnet dedicated to assigning IP addresses to remote clients upon successful tunnel establishment.
+* **DNS configuration**: Requires setting DNS servers (Google Public DNS or corporate internal DNS) to handle remote intranet name resolution.
+* **Authentication setup**: Supports local ESG user authentication (**ESG VPN User**) configured via *Configure > Users > ESG VPN Users*, along with a Pre-Shared Key for IPsec tunnel authentication.
+<img width="768" height="382" alt="image" src="https://github.com/user-attachments/assets/cdfea037-a75d-4941-a31b-ba5a4e6d7459" />
+
+* **SecuPoint client routing modes**:
+  * **Send all client traffic through VPN (Full Tunnel)**: Routes all internet and internal traffic through the tunnel for total security compliance, though it increases server bandwidth and latency.
+  * **Only send traffic to ESG LAN through VPN (Split Tunnel)**: Routes only corporate internal traffic through the tunnel while keeping standard internet browsing on the client's local gateway.
+<img width="768" height="441" alt="image" src="https://github.com/user-attachments/assets/d7e4a6fd-a1f2-486c-8c86-7cc92fd5abe6" />
+
+#### VPN Client using Shrew VPN Client on Windows 10 as an example
+Markdown
+#### 10.3 VPN Client Setup using Shrew VPN Client on Windows 10
+* **DDNS for dynamic WAN IP**: Configures dynamic DNS (e.g., `ntkevinshao.ddns.net`) on the ESG so remote clients can establish connections without needing a static public WAN IP address.
+* **Host Name entry**: Uses the ESG DDNS domain name in the Shrew VPN Client host configuration field to automatically target the gateway's active public IP address.
+* **Split Tunneling configuration**: Disables *Obtain Topology Automatically* / *Tunnel All* in Shrew VPN Client and manually specifies the *Remote Network Resource* to route only targeted intranet subnets through the tunnel.
+* **Routing table behavior**: Assigns a client IP (e.g., `10.10.11.1/24`) and adds a dedicated static route to the internal network (e.g., `192.168.66.0/24`) via the IPsec tunnel interface while leaving the default internet route unchanged.
+<img width="768" height="357" alt="image" src="https://github.com/user-attachments/assets/c2085693-0d54-441b-a10a-9b5b9d02aadf" />
+<img width="768" height="355" alt="image" src="https://github.com/user-attachments/assets/213bfac3-edfb-4a66-bccd-dc5ba101acca" />
+<img width="900" height="420" alt="image" src="https://github.com/user-attachments/assets/ee515257-0121-413d-9d4d-7402d11408e3" />
+<img width="768" height="406" alt="image" src="https://github.com/user-attachments/assets/81cff99d-f1f2-4c80-9be7-8a203ae48b3e" />
+<img width="768" height="376" alt="image" src="https://github.com/user-attachments/assets/69fab2c3-c070-4e1e-87c0-f013bb5f9e0d" />
+
+#### VPN Client Setup using iPad native VPN client as an example
+* **Native iOS/iPadOS integration**: Establishes remote IPsec client VPN connections directly through the iPad's built-in native VPN settings without requiring third-party client software.
+* **On-premise user experience**: Delivers seamless remote access identical to being physically connected on-site once the client VPN tunnel is established.
+* **Intranet utility testing**: Enables iOS network tools to perform direct internal management tasks across the tunnel, such as using *iNetTools* to ICMP ping internal devices (e.g., L2 Switch at `192.168.66.200`) or *iTerminal* to Telnet directly into LAN switch management interfaces.
+<img width="768" height="380" alt="image" src="https://github.com/user-attachments/assets/f9a1360f-dc68-473d-bd71-925fb3ac1300" />
+<img width="768" height="376" alt="image" src="https://github.com/user-attachments/assets/a47f3307-44be-4bda-88e7-3c1c4957c67f" />
+
+#### EnGenius SecuPoint VPN Client Setup
+* **Automated profile provisioning**: Pushes VPN configurations automatically from the EnGenius gateway to the SecuPoint client app, eliminating complex manual IPsec/SSL setup.
+* **Profile creation**: Click **Add** in the SecuPoint client and enter a custom profile name alongside the domain, Primary WAN Public IP, or FQDN displayed on the EnGenius Cloud VPN Client page.
+* **User authentication**: Click **Connect** and enter the cloud-configured ESG VPN user credentials (e.g., `johndoe`) to authenticate and establish the VPN connection.
+* **Dynamic address acquisition**: Displays real-time status transitions (*Connecting to Server* -> *Acquiring IP*) until full tunnel connectivity and client IP assignment are complete.
+<img width="585" height="365" alt="image" src="https://github.com/user-attachments/assets/aed808d0-b0f2-4c1b-a01a-df5991375f32" />
+<img width="463" height="306" alt="image" src="https://github.com/user-attachments/assets/18386c97-9cb3-4160-bd98-85d31e4b7547" />
+<img width="582" height="368" alt="image" src="https://github.com/user-attachments/assets/d54db077-320b-440c-ae45-6452a0f4af84" />
+<img width="323" height="287" alt="image" src="https://github.com/user-attachments/assets/499753af-927c-49bd-a1d7-82bcc5b24404" />
+<img width="456" height="245" alt="image" src="https://github.com/user-attachments/assets/5d838ad0-0a4c-4fb6-939f-680abcf203f1" />
+<img width="460" height="246" alt="image" src="https://github.com/user-attachments/assets/49183296-ff42-4031-9837-e70a070a9dbc" />
+<img width="527" height="685" alt="image" src="https://github.com/user-attachments/assets/3c790bfd-a093-4b7d-818f-4f32440cab53" />
 
 
 
