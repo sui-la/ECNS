@@ -389,5 +389,82 @@ Markdown
 <img width="460" height="246" alt="image" src="https://github.com/user-attachments/assets/49183296-ff42-4031-9837-e70a070a9dbc" />
 <img width="527" height="685" alt="image" src="https://github.com/user-attachments/assets/3c790bfd-a093-4b7d-818f-4f32440cab53" />
 
+## Configure ESG Firewall Rules
+#### Firewall Basics: Enforcing Access Control
+> For example, a company has three servers: General Web Server, Restricted File Server and a Restricted ERP Server. If the security policy is: John can access General Web Server only; Mary can access all three servers. Then you should configure your firewall rules like the example diagram below.
+<img width="768" height="392" alt="image" src="https://github.com/user-attachments/assets/7d7c9f3c-72d0-41c4-acb3-2ccd6628201a" />
 
+#### Firewall Basics: NAT Router
+**NAT** - translate a local private IP address to a public WAN address of the router
+<img width="768" height="302" alt="image" src="https://github.com/user-attachments/assets/8199f909-1378-4694-b443-07f0b04ab445" />
 
+#### Firewall Basics: NAPT (Network Address Port Translation)
+* **Multi-host IP sharing**: Translates and maps both IP addresses and port numbers, allowing multiple internal private IP clients to share a single public IP address for simultaneous Internet access.
+* **Public IP conservation**: Minimizes the number of public IP addresses required by dynamically multiplexing traffic across unique source ports.
+* **NAT vs. Access Control**: Operating strictly as a translation mechanism at the edge (like a standard NAT router), NAPT handles port translation without enforcing traffic access control policies on its own.
+* **Translation table mapping**: Maintains a NAPT table tracking internal source IP/port combinations and mapping them to the single translated public IP with unique source ports to properly route incoming return traffic.
+<img width="768" height="314" alt="image" src="https://github.com/user-attachments/assets/ab5ce98e-e6e8-4687-9a0a-62728dd42aa0" />
+
+#### Firewall Basics: Internal/DMZ/External
+* **Network zone isolation**: Serves as a security boundary providing managed connectivity between networks with varying trust levels (Internal, DMZ, External).
+* **Security policy enforcement**: Controls and regulates all traffic flows passing between distinct network security zones according to corporate policy.
+* **Outbound network access**: Allows clients inside the trusted internal network to freely initiate outbound connections to the Internet.
+* **Inbound traffic restriction**: Blocks external clients on the public Internet from initiating unauthorized inbound connections directly into the internal network.
+* **DMZ server hosting**: Isolates publicly accessible services (e.g., corporate web servers, FTP servers) inside a Demilitarized Zone (DMZ) so external users can access them without exposing the internal private network.
+<img width="768" height="396" alt="image" src="https://github.com/user-attachments/assets/dd07afbd-f6f1-4d21-85c7-4d1043238820" />
+
+#### Firewall Basics: 1:1 NAT
+* **DMZ server accessibility**: Uses 1:1 NAT to allow external Internet clients to securely access DMZ servers hosted on private IP addresses via a Virtual IP (VIP).
+* **Destination IP translation**: Translates only the external destination Virtual IP (e.g., `200.2.2.3`) to the target server's internal private IP (e.g., `10.1.1.1`) upon receiving inbound packets.
+* **Destination port preservation**: Keeps the destination port completely unchanged during translation without modifying port parameters.
+* **ESG WAN IP restriction**: Avoid using the ESG’s primary WAN IP as the external Virtual IP for 1:1 NAT, as doing so will disrupt the gateway’s own network communications.
+<img width="768" height="198" alt="image" src="https://github.com/user-attachments/assets/36ace225-ac76-42d7-9e28-de00e582879c" />
+
+#### Firewall Basics: Create a DMZ on ESG
+<img width="544" height="438" alt="image" src="https://github.com/user-attachments/assets/646ae87c-db9c-4bf9-ae91-60cafffdc28a" />
+
+#### Configure firewall outbound rules on ESG
+* **Configuration path**: Manage traffic rules via *Configure > Gateway > Firewall > Outbound Rules*.
+* **Outbound & inter-VLAN control**: Manages outbound Internet access and enforces access control across inter-VLAN traffic (which is allowed by default).
+* **Rule evaluation order**: Evaluates custom rules sequentially before the default **Allow Any** rule; outbound rules apply to all ingress traffic across all VLANs.
+* **Deny All precaution**: Adding a broad *Deny Any* rule blocks local client network and Internet access while leaving the ESG connected to EnGenius Cloud (recovery requires deleting the rule via an alternate connection).
+> In case this happens, you have to do the following:
+  - Login to EnGenius Cloud and delete the deny any rule before the default “allow any” rule via another Internet source as the local one was blocked by the rule.
+  - Wait for 5-10 minutes for the configuration changes to take effect.
+  - Local clients should be able to regain access to the network and the internet.
+<img width="768" height="389" alt="image" src="https://github.com/user-attachments/assets/fddcd232-c1fc-428c-b051-6b53f2e5a46a" />
+
+* **Layer 7 outbound blocking (PRO License)**: Blocks application traffic by category or specific application (e.g., streaming, Apple Music) without relying on fixed IP addresses or ports.
+* **Encrypted traffic limitations**: Layer 7 inspection fails to block applications using encrypted tunnels (e.g., client VPNs or iCloud Private Relay).
+<img width="768" height="310" alt="image" src="https://github.com/user-attachments/assets/f696c545-e959-4523-b9f4-ace02ca748fb" />
+<img width="768" height="380" alt="image" src="https://github.com/user-attachments/assets/0bbd1dc6-c7eb-4dd5-8ed9-880390037112" />
+
+#### Configure Firewall Inbound Port Forwarding Services on ESG
+* **Configuration path**: Set up inbound destination port translation via *Configure > Gateway > Firewall > Port Forwarding*.
+* **Remote management access**: Allows external users to connect to internal devices (e.g., Telnet into a switch at `192.168.66.200`) via WAN public IPs without requiring a client VPN connection.
+* **Destination port translation**: Supports keeping the original external destination port unchanged or translating it to a different internal port (e.g., mapping external TCP 80 to internal TCP 8080).
+* **Dynamic WAN IP integration**: Pairs with ESG DDNS (e.g., `ntkevinshao.ddns.net`) to maintain reliable remote domain access when the gateway's public WAN IP changes dynamically.
+  > ISP gives router new IP → Router detects its own new IP → Router pushes the update to DDNS server
+<img width="768" height="382" alt="image" src="https://github.com/user-attachments/assets/9bd887f7-bd36-440a-82e1-6b2244a10722" />
+
+* **Public IP efficiency**: Shares a **single public WAN IP** across **multiple internal servers** by assigning unique external service ports (e.g., mapping port 80 to Server 1 and port 81 to Server 2).
+* **Multi-WAN binding options**: Binds port forwarding rules to WAN1, WAN2, or WAN1 & WAN2 (where the secondary WAN automatically activates as a failover if the primary link goes down).
+* **Gateway service port conflicts**: Port forwarding rules override internal ESG services using the same port (e.g., forwarding WAN IP TCP 80 to an internal server disables local ESG Web Status access on port 80).
+<img width="768" height="395" alt="image" src="https://github.com/user-attachments/assets/38580e9a-0c37-4119-8ebd-ef8c19ab789b" />
+
+#### Configure Firewall 1:1 NAT Services on ESG
+* **Configuration path**: Manage dedicated single-IP mappings via *Configure > Gateway > Firewall > 1:1 NAT*.
+* **Scalability over Port Forwarding**: Eliminates destination port management complexity when hosting multiple internal servers by assigning dedicated public IP addresses provided by your ISP.
+* **Dedicated IP allocation**: Assigns individual public IP addresses to mission-critical servers (e.g., mapping external `200.2.2.3` directly to internal server `192.168.66.100/24`).
+* **Destination IP translation**: Translates inbound packets targeting the Virtual IP (`200.2.2.3`) to the private IP (`192.168.66.100`) while keeping the destination port number completely unchanged.
+* **Simplified user access**: Allows clients to access services via standard protocols (e.g., `http://200.2.2.3` or assigned domain names) without appending custom port numbers.
+<img width="768" height="386" alt="image" src="https://github.com/user-attachments/assets/79ec2128-f166-4515-ad1d-a4ea6b64eec4" />
+
+#### Configure Firewall Allowed Services on ESG
+* **Configuration path**: Manage remote gateway service access via *Configure > Gateway > Firewall > Allowed Services*.
+* **Supported WAN access services**: 
+  * **ICMP Ping**: Allows the ESG WAN interface IP to respond to ping requests from external networks.
+  * **Web (local status & configuration)**: Allows remote access to the ESG Local Status Page (LSP) over the WAN interface.
+* **Allowed Remote IP restriction**: Restricts WAN access for ICMP Ping and Web status to specified remote IP addresses; remote IP addresses is set to *none* by default for maximum security.
+* **Port forwarding collision restriction**: Overriding TCP Port 80 via Port Forwarding (e.g., mapping `Primary WAN IP:80` to an internal server) disables remote Web status page access even if the feature is enabled.
+<img width="768" height="286" alt="image" src="https://github.com/user-attachments/assets/dbf48b39-f97d-4bed-bf78-6287c347d3c1" />
